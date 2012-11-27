@@ -11,6 +11,10 @@ struct Square
     bool sinceSeen,hasSeen, isWater, isHill, isFood;
     int ant, hillPlayer;
     double foodDif;
+
+
+    double guardDif;
+
     bool AntHereCheck;//for use in small-scale fight battles
     //Food diffusion is also exploration diffusion
     //std::vector<int> deadAnts;
@@ -28,6 +32,7 @@ struct Square
         hasSeen = sinceSeen = isWater = isHill = isFood = AntHereCheck = 0;
         ant = hillPlayer = -1;
         foodDif=0.;
+        guardDif=0.;
     };
     void reset()//resets the information for the square except water information
     {

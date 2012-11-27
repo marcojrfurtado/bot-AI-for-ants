@@ -45,7 +45,7 @@ struct State
     int64_t seed;
 
     std::vector<std::vector<Square> > grid;
-    std::vector<std::vector<double> > invisigrid;//this is used to speed up diffusions
+    std::vector<std::vector<double> > invisigrid,invisigrid2;//this is used to speed up diffusions
 
     std::vector<Location> myHills, enemyHills, food,hillsNowSeen, enemyNonFightingAnts, enemyFightingAnts;
     std::list<Location> myAnts, enemyAnts;

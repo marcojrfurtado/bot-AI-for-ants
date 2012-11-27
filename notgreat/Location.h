@@ -14,6 +14,8 @@ struct Location
     }
     int row, col;
 
+    
+
     Location()
     {
         row = col = 0;
@@ -23,6 +25,11 @@ struct Location
     {
         row = r;
         col = c;
+	isGuardian = true;
     };
+
+    // ANT ATTRIBUTES
+    // isGuardian - Defines whether an ant is a guardian
+    bool isGuardian;
 };
 #endif //LOCATION_H_

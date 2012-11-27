@@ -20,6 +20,7 @@ void State::setup()
 {
     grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
     invisigrid = vector<vector<double> >(rows, vector<double>(cols, 0));
+    invisigrid2 = vector<vector<double> >(rows, vector<double>(cols, 0));
     for(int row=0; row<rows; row++)
         for(int col=0; col<cols; col++)
             grid[row][col].init();
@@ -111,9 +112,7 @@ void State::preDiffuse()
     }
     for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
         loc = myHills[a];
-	if ( grid[loc.row][loc.col].foodDif <= -100 )
-		grid[loc.row][loc.col].foodDif = 200;
-	grid[loc.row][loc.col].foodDif -= 10;
+	grid[loc.row][loc.col].guardDif = 20000;
     }
 
     list<Location>::iterator b;
@@ -145,37 +144,39 @@ void State::preDiffuse()
     }
     for(int a=0; a<(int) enemyHills.size(); a++){//charge ememy anthills
         loc = enemyHills[a];
-        bug<<"enemy:"<<loc.row<<","<<loc.col<<endl;
+    //    bug<<"enemy:"<<loc.row<<","<<loc.col<<endl;
         grid[loc.row][loc.col].foodDif += 200;
         if (grid[loc.row][loc.col].foodDif < 1000)
             grid[loc.row][loc.col].foodDif = 1000;
     }
 }
-#define DiffusionStuffa(x,y) if (!grid[x][y].isWater){count++;tmp += grid[x][y].foodDif;}
-#define DiffusionStuffb(x,y) if (!grid[x][y].isWater){count++;tmp += invisigrid[x][y];}
+#define DiffusionStuffa(x,y) if (!grid[x][y].isWater){count++;tmp_1 += grid[x][y].foodDif; tmp_2 +=grid[x][y].guardDif;}
+#define DiffusionStuffb(x,y) if (!grid[x][y].isWater){count++;tmp_1 += invisigrid[x][y]; tmp_2 +=grid[x][y].guardDif;}
 void State::diffuse(int repetitions)//diffuses food and (some?)recrution of nearby ants
 {//actually does 2x repetition count, using invisigrid
-    float tmp,count;
+    float tmp_1,tmp_2,count;
     for(int i=0;i<repetitions;i++)
     {
         rowRep{colRep{
-            tmp=count=0;
+            tmp_1=tmp_2=count=0;
             if (grid[row][col].land()){
                 DiffusionStuffa(xw(row+1),col);
                 DiffusionStuffa(xw(row-1),col);
                 DiffusionStuffa(row,yw(col+1));
                 DiffusionStuffa(row,yw(col-1));
-                invisigrid[row][col] = (tmp+(grid[row][col].foodDif*2))/(count+2);
+                invisigrid[row][col] = (tmp_1+(grid[row][col].foodDif*2))/(count+2);
+                invisigrid2[row][col] = (tmp_2+(grid[row][col].guardDif*2))/(count+2);
             }
         }}
         rowRep{colRep{
-            tmp=count=0;
+            tmp_1=tmp_2=count=0;
             if (grid[row][col].land()){
                 DiffusionStuffb(xw(row+1),col);
                 DiffusionStuffb(xw(row-1),col);
                 DiffusionStuffb(row,yw(col+1));
                 DiffusionStuffb(row,yw(col-1));
-                grid[row][col].foodDif = (tmp+(invisigrid[row][col]*2))/(count+2);
+                grid[row][col].foodDif = (tmp_1+(invisigrid[row][col]*2))/(count+2);
+                grid[row][col].guardDif = (tmp_2+(invisigrid2[row][col]*2))/(count+2);
             }
         }}
     }
@@ -313,6 +314,9 @@ istream& operator>>(istream &is, State &state)
     }
     else
     {
+
+	int countMyAnts =0;
+	
         //reads information about the current turn
         while(is >> inputType)
         {
@@ -333,7 +337,13 @@ istream& operator>>(istream &is, State &state)
                 state.grid[row][col].ant = player;
                 if(player == 0)
                 {
-                    state.myAnts.push_back(Location(row, col));
+
+	  	  // One fifth of the newly created ants are guardians
+   		    countMyAnts++;
+
+		    Location loc = Location(row,col);
+		    loc.isGuardian = ( countMyAnts%5 == 0  )?true:false;
+                    state.myAnts.push_back(loc);
                 }
                 else
                     state.enemyAnts.push_back(Location(row, col));

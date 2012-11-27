@@ -4,9 +4,10 @@
 #include "State.h"
 #include "orders.h"
 #include "BoardEval.h"
+#include "Bug.h"
 
 
-#define ENG_RAD 18 //engagement radius (atk+2)
+#define ENG_RAD 2 //engagement radius (atk+2)
 #define ATK_RAD 5 //attack radius
 #define MID_RAD 11 //middle radius (atk+1)
 /*
@@ -17,6 +18,7 @@ struct Bot
     State state;
     //int enemycount;
     Bot();
+    ~Bot();
     int moveTo(Location loc1, Location loc2);//best direction to go from loc1 to loc2, ignoring everything
     int moveAway(Location loc1, Location loc2);//best direction to go from loc1 to loc2, ignoring everything
 
@@ -29,6 +31,7 @@ struct Bot
     void smallbatt(FightGroup B);
     void largebatt(FightGroup B);
     Orders getfit(FightGroup B);
+    Bug bug;
 
 };
 

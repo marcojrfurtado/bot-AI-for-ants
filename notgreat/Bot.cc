@@ -6,6 +6,11 @@ using namespace std;
 Bot::Bot()
 {
 
+    bug.open("debug_bot",".txt");
+};
+Bot::~Bot()
+{
+    bug.close();
 };
 
 //plays a single game of Ants.
@@ -295,7 +300,8 @@ void Bot::smallbatt(FightGroup B)
     //state.bug<<"("<<final.ants[0].row<<","<<final.ants[0].col<<")->my:"<<final.md<<" their:"<<final.ed<<" close"<<final.dist<<" tot:"<<final.fitness<<"  "<<state.timer.getTime()<<"ms"<<endl;
     for(int i = 0;i<(int)final.dir.size();i++)
     {
-        state.makeMove(final.ants[i],final.dir[i]);
+	   if ( !final.ants[i].isGuardian  )
+        	state.makeMove(final.ants[i],final.dir[i]);
     }
 }
 void Bot::largebatt(FightGroup B)
@@ -316,7 +322,7 @@ void Bot::largebatt(FightGroup B)
             if (mustfight[b]==loc)
             {
                 mustgo=true;
-                closest=mustfightto[b];//and move him towards that fight
+               closest=mustfightto[b];//and move him towards that fight
                 dirMove = moveTo(loc,closest);
                 break;
             }
@@ -402,7 +408,7 @@ void Bot::largebatt(FightGroup B)
                 dirMove = orderlist[a].dir;
                 if (dirMove != -1){
                     nloc = state.getLoc(loc, dirMove);
-                    if (state.grid[nloc.row][nloc.col].isOpen()){
+                    if (state.grid[nloc.row][nloc.col].isOpen() && !loc.isGuardian){
                         state.makeMove(loc,dirMove);
                         orderlist.erase(orderlist.begin()+a);
                         a--;
@@ -428,7 +434,7 @@ void Bot::makeMoves()
     //if (turn < 100) state.bug << state << endl;
     //picks out moves for each food ant
     int bestd;
-    float maxDif;
+    float maxDif, maxGuardDif;
     Location loc;
 
     list<Location>::iterator ant;
@@ -438,30 +444,45 @@ void Bot::makeMoves()
         loc = *ant;
         bestd = 4;
         maxDif = state.grid[loc.row][loc.col].foodDif-100;
+       maxGuardDif = state.grid[loc.row][loc.col].guardDif-100;
         //state.bug<<"from "<<state.grid[loc.row][loc.col].foodDif<<endl;
         for(int d=0; d<4; d++)
         {
+	    int count = 0;
             Location nloc = state.getLoc(loc, d);
             if (state.grid[nloc.row][nloc.col].AntHereCheck) break;
-            if (state.grid[nloc.row][nloc.col].hillPlayer > 0)
-            {//if there is an enemy hill next to us, KILL IT NAO
-                bestd = d;
-                break;
-            }
-	    // PROBLEMA: DUAS FORMIGAS PODEM BUSCAR O MESMO ALIMENTO
 
-            if (state.grid[nloc.row][nloc.col].isFood)
-            {//if there's food next to us, collect it now
-                bestd = d;
-                state.grid[nloc.row][nloc.col].foodDif=0;//and then run away from it, since we don't need its scent anymore
-                break;
-            }
-            if(state.grid[nloc.row][nloc.col].isOpen() && state.grid[nloc.row][nloc.col].foodDif >= maxDif)
-            {//otherwise, go in the direction of need
-                maxDif = state.grid[nloc.row][nloc.col].foodDif;
-                bestd = d;
-            }
+
+	    if ( ant->isGuardian ) {
+//		    bug << "Teste " << state.grid[nloc.row][nloc.col].guardDif << " " << state.grid[nloc.row][nloc.col].foodDif << endl;
+            	    if(state.grid[nloc.row][nloc.col].isOpen() && state.grid[nloc.row][nloc.col].guardDif >= maxGuardDif) {
+		    
+			    maxGuardDif = state.grid[nloc.row][nloc.col].guardDif;
+			    bestd = 4;
+		    }
+	    } else {
+
+		    if (state.grid[nloc.row][nloc.col].hillPlayer > 0)
+		    {//if there is an enemy hill next to us, KILL IT NAO
+			bestd = d;
+			break;
+		    }
+		    // PROBLEMA: DUAS FORMIGAS PODEM BUSCAR O MESMO ALIMENTO
+
+		    if (state.grid[nloc.row][nloc.col].isFood)
+		    {//if there's food next to us, collect it now
+			bestd = d;
+			state.grid[nloc.row][nloc.col].foodDif=0;//and then run away from it, since we don't need its scent anymore
+			break;
+		    }
+		    if(state.grid[nloc.row][nloc.col].isOpen() && state.grid[nloc.row][nloc.col].foodDif >= maxDif)
+		    {//otherwise, go in the direction of need
+			maxDif = state.grid[nloc.row][nloc.col].foodDif;
+			bestd = d;
+		    }
+	    }
         }
+
         state.makeMove(loc,bestd);
         //state.bug<<state.grid[loc.row][loc.col].foodDif<<" ";
     }
