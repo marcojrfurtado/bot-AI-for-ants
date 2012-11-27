@@ -452,7 +452,7 @@ void Bot::makeMoves()
 
             if (state.grid[nloc.row][nloc.col].isFood)
             {//if there's food next to us, collect it now
-                bestd = 4;
+                bestd = d;
                 state.grid[nloc.row][nloc.col].foodDif=0;//and then run away from it, since we don't need its scent anymore
                 break;
             }

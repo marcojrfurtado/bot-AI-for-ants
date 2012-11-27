@@ -111,9 +111,10 @@ void State::preDiffuse()
     }
     for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
         loc = myHills[a];
-        //if (turn < 100)
-            //grid[loc.row][loc.col].foodDif += turn/2-50;
-        }
+	if ( grid[loc.row][loc.col].foodDif <= -100 )
+		grid[loc.row][loc.col].foodDif = 200;
+	grid[loc.row][loc.col].foodDif -= 10;
+    }
 
     list<Location>::iterator b;
     for (b = myAnts.begin(); b != myAnts.end(); b++){
@@ -179,12 +180,13 @@ void State::diffuse(int repetitions)//diffuses food and (some?)recrution of near
         }}
     }
 
-    bug << "Food dif: turn " << turns << endl;
+ /*   bug << "Food dif: turn " << turns << endl;
     rowRep {
 	    colRep {
 		    bug << "x: " << row << ", y: " << col << "," << grid[row][col].foodDif << endl ;
 	    }
     }
+    */
 }
 void State::updateVisionInformation()
 {

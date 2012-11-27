@@ -1,0 +1,45 @@
+1. Main Idea
+From the highest level, I used the greedy algorithm as my overall strategy: at each turn, for each of my ants, enumerate every possible task it can be assigned. Each task will be given a score based on some criteria (as briefed below). Then, iterate through all the ants, and always pick up the ant along with the task that has the highest score across all possible tasks, until all the ants have been assigned a task (i.e., issued a move).
+
+The types of tasks include the following: Getting a food, intercepting an enemy, razing an enemy hill, and exploring the map (expanding my territory). Because of the greedy algorithm described above, no strict orders or priorities are given to these different types of tasks. The specific task orders are determined by their evaluation scores. However, in most cases "Getting Food" will have the highest score, while in the final version "Map Exploration" always comes last.
+
+There's also one exception to the overall greedy algorithm above: combat resolution always comes before all the other types of task assignment. Actually I think it would be cool to integrate combat resolution into the above "greedy algorithm framework" as well (e.g., an ant in battle may run out of the battle against some less threatening enemies, and go for some more threatening enemies), but I didn't have enough time to get to that.
+
+
+2. Combat Resolution
+I worked on this part first when started coding for this AI challenge, and I think this may also be the strongest part of my bot as well. The main approach is as follows:
+
+For *small groups* of ants involved in a battle, I generate all the sets of possible moves for my ants and enemy ants. Then I used one-level depth min-max tree along with alpha-beta pruning to pick my best move plan which would have the maximum score against all possible enemy moves. In generating all the possible moves for my ants and enemy ants, those invalid moves (i.e. two ants run into the same tile) and duplicate moves (i.e., two ants just exchange their positions) are removed before being evaluated in the min-max tree. Combined with alpha-beta pruning, this mechanism proved to be quite efficient. In most cases it is sufficient to handle 6 vs. 6 battles.
+
+For larger groups when the min-max algorithm is likely to time out, a simple version is used instead: I only generate the possible moves for my ants, and just assume all the enemy ants would stay in the same positions in the next turn. Then I iterate through all my move plans to pick up the best move plan against the "frozen enemies". This approximation turns out to be quite effective as well, which in most cases would result in no-loss or mutual-kills with enemies, and pure loss of my ants in just a few cases.
+
+For even larger groups (I saw as many as 35 of my ants involved in one battle from my debug trace) when it is not possible to enumerate all my possible moves, I choose one further simplified version: just pick up from three different move plans: aggressive move (approach enemies), defense move (usually means staying on the current position), and dodge move (hold back). For each of the above three plans, each ant will choose from its five directions (including the "stay" direction), and just go to the one that best adapts to the plan. The plan with the highest overall score (again, against the "frozen enemies") will be chosen as the final move plan.
+
+
+3. Getting food
+During the task generation phase, all the food close to an ant will be evaluated and inserted into the ant's potential task set. The main scoring factor here is the distance (I used A* to search the path for every ant to every food nearby, which sounds crazy but turns out to be fast enough). Furthmore, the "density of food" factor is also considered and added to the final score. So an ant may go for a food with other food nearby, rather than go to a closer food without any other food nearby.
+
+
+4. Enemy Interception
+I got this idea after watching some other top ranking bots (e.g., xathis's bot). The main idea is that we don't need to sacrifice our ants when we don't have to. And the only way to avoid sacrificing our ants is to use more ants to beat enmey ants. So whenever there are my ants involved in the battle, my spare ants (i.e., not involved in a battle) nearby would approach the enemies to support my army. The scoring factor for such tasks is the combination of distance (from my ant to the enemy ant), and the number of my ants that are already in the battle with the group of enemy ants. If I already have three ants against one enemy ant, then just leave them as they are.
+
+The scores for enemy interception tasks are usually lower than food hunting tasks, except when in the case that enemy ants are close to one of my hills. When giving a good score evaluation function, this can result in some really intelligent moves. I like it when I see my ants go for a really close food when the enemy ants are close to my hill, while choose to forget about the food when my hill is really in danger.
+
+
+5. Razing enemy hills
+Razing enemy hills is the GOAL, I know. But after some testings, somehow I found it is not a very good idea to send all my ants for enemy hills. So I restrict the total number of ants that could simultaneously go for enemy hills. The score of razing an enemy hill is based on the Euclidean distance of my ant to the hill.
+
+I also came up with the idea that a lot of other bots have as well, i.e., using Ninja ants to sneak into the enemy hill whenever it's possible. This involves a single extra parameter in my A* path finding algorithm.
+
+
+6. Map Exploration
+For a long period during my involvement in the contest, I thought combat is the most important part of this game. However, as time went by, I more and more realized the importance of a good map exploration strategy. IMHO, this may even be the most critical strategic part that have separated the top ranking bots apart. Another way to interprete this is "I can afford sacrificing my ants if I can get food faster than my enemies". Unfortunately, I was too late to get this point, and maybe that's why I'm not getting into top 20 :-)
+
+Map exploration consists of two main parts, i.e., territory expansion (enlarge the part of the map that I can view) and territory keeping (keep my ants there to maintain the view area). To determine how fast we should expand can really be a difficult question, and is heavily dependent on different map types and food growth rates. If I expand too fast in a sparse food maze map, my hill may soon be razed by close enemies. In contrast, if I expand too slow in a random_walk map with lots of food, my enemy's population would soon surpassed mine and eliminate all my ants. Furthermore, to determine when we need to break blocking state (this could easily happen in maze type maps) even when that means sacrificing our ants is also a critical problem. Unfortunately, I didn't implement any comprehensive solution to handle this map expansion problem.
+
+Territory keeping, on the other hand, is relatively easier and less critical. I used the approach that makes my spare ants keep flowing within my current view area.
+
+
+7. Final Words
+One question that remains in my head is how effective this greedy algorithm approach can really be. I implemented this approach in a late stage and I really wish I could have more time to test with my scoring functions. The nice thing about this approach is that it can unify all types of tasks into a single strategy framework. All the magic then just happen in the scoring functions for the tasks. In the final version of my bot, the magic showed in some places but didn't show in other places. It might end up with a stronger bot if I can come up with more appropriate scoring functions.
+
