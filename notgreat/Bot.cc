@@ -129,10 +129,6 @@ void Bot::battleCheck()
                 list<Location>::iterator d;
                 for (d = state.myAnts.begin(); d != state.myAnts.end();)
                 {
-//			if ( d->isGuardian ) {
-//				bug << " battleCheck: Guardian found 2" << endl;
-//				continue;
-//			}
                     if(state.distance(*d, antLoc) <= ENG_RAD)
                     {
                         checkMyAnts.push(*d); // myAnt is in currentFightGroup
@@ -459,7 +455,7 @@ void Bot::makeMoves()
     //if (turn < 100) state.bug << state << endl;
     //picks out moves for each food ant
     int bestd;
-    float maxDif, maxGuardDif;
+    float maxDif, maxTotalDif;
     Location loc;
 
     list<Location>::iterator ant;
@@ -469,7 +465,7 @@ void Bot::makeMoves()
         loc = *ant;
         bestd = 4;
         maxDif = state.grid[loc.row][loc.col].foodDif-100;
-       maxGuardDif = state.grid[loc.row][loc.col].guardDif-100;
+        maxTotalDif = maxDif + state.grid[loc.row][loc.col].guardDif;
         //state.bug<<"from "<<state.grid[loc.row][loc.col].foodDif<<endl;
         for(int d=0; d<4; d++)
         {
@@ -480,11 +476,29 @@ void Bot::makeMoves()
 
 	    if ( ant->isGuardian ) {
 //		    bug << "Teste " << state.grid[nloc.row][nloc.col].guardDif << " " << state.grid[nloc.row][nloc.col].foodDif << endl;
-            	    if(state.grid[nloc.row][nloc.col].isOpen() && state.grid[nloc.row][nloc.col].guardDif >= maxGuardDif) {
+            	    float totalDif = state.grid[nloc.row][nloc.col].foodDif + state.grid[nloc.row][nloc.col].guardDif;
+		    if(state.grid[nloc.row][nloc.col].isOpen() ) {
+				    
+			if ( totalDif >= maxTotalDif )  {
 		    
-			    maxGuardDif = state.grid[nloc.row][nloc.col].guardDif;
+			    maxTotalDif = totalDif;
 			    bestd = d;
+		    	}
+/*
+			if ( state.grid[nloc.row][nloc.col].foodDif >= maxGuardDif)  {
+		    
+			    maxGuardDif = state.grid[nloc.row][nloc.col].foodDif;
+			    bestd = d;
+		    	}*/
 		    }
+		    
+		    if (state.grid[nloc.row][nloc.col].isFood)
+		    {//if there's food next to us, collect it now
+			bestd = d;
+			state.grid[nloc.row][nloc.col].foodDif=0;//and then run away from it, since we don't need its scent anymore
+			break;
+		    }
+            	    
 	    } else {
 
 		    if (state.grid[nloc.row][nloc.col].hillPlayer > 0)
