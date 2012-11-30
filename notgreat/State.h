@@ -27,6 +27,7 @@ const int DIRECTIONS[5][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0,0} };      /
 #define rowRep for(int row=0; row<rows; row++)
 #define colRep for(int col=0; col<cols; col++)
 
+#define GRD_RAD 6
 
 extern int rows,cols,turn;//these are global variables
 /*
@@ -51,6 +52,9 @@ struct State
     std::list<Location> myAnts, enemyAnts;
     std::vector<FightGroup> fightingGroups;
 
+
+    std::vector<Location> guardLocation;
+
     //myAnts = foodAnts actually
     Timer timer;
     Bug bug;
@@ -62,6 +66,8 @@ struct State
 
     void setup();
     void reset();
+    void defineGuardians();
+    void print_status();
 
     void makeMove(const Location &loc, int direction);
 

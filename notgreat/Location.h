@@ -19,13 +19,14 @@ struct Location
     Location()
     {
         row = col = 0;
+	isGuardian = false;
     };
 
-    Location(int r, int c)
+    Location(int r, int c, bool isG = false)
     {
         row = r;
         col = c;
-	isGuardian = true;
+	isGuardian = isG;
     };
 
     // ANT ATTRIBUTES

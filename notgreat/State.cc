@@ -24,7 +24,46 @@ void State::setup()
     for(int row=0; row<rows; row++)
         for(int col=0; col<cols; col++)
             grid[row][col].init();
+
 };
+
+
+void State::defineGuardians() {
+
+
+	std::list<Location>::iterator it;
+	std::vector<Location>::iterator itH;
+	for(itH = myHills.begin(); itH != myHills.end(); itH++ ) {
+		int numGuardiansLeft= (myAnts.size()/5)/ myHills.size();
+		for( it = myAnts.begin() ; it != myAnts.end(); it++ ) {
+			
+			// If we reached the desired number of guardians for this hill, leave
+			if ( numGuardiansLeft <= 0 )
+				break;
+
+			if ( distance(*it,*itH ) <=  GRD_RAD ) {
+				it->isGuardian=true;
+				numGuardiansLeft--;
+			}	
+		}
+	}
+
+
+
+}
+
+
+void State::print_status() {
+
+	std::list< Location >::iterator it;
+	bug << "[";
+	for( it = myAnts.begin() ; it != myAnts.end(); it++ ) {
+
+		bug << " " << it->isGuardian <<  "(" << it->row << "," << it->col << ")";
+	}
+	bug << " ]";
+
+}
 
 //resets everything for the next turn
 void State::reset()
@@ -48,6 +87,9 @@ void State::reset()
 //outputs move information to the engine
 void State::makeMove(const Location &loc, int direction)
 {
+   if ( loc.isGuardian )
+	   bug << "Guard moving" << endl;
+
     if (direction < 4 && direction > -1)
     {
         cout << "o " << loc.row << " " << loc.col << " " << CDIRECTIONS[direction] << endl;
@@ -91,7 +133,7 @@ int State::xw(int x){
 Location State::getLoc(const Location &loc, int direction)
 {
     return Location( xw(loc.row + DIRECTIONS[direction][0]),
-                     yw(loc.col + DIRECTIONS[direction][1]));
+                     yw(loc.col + DIRECTIONS[direction][1]),loc.isGuardian);
 };
 
 void State::preDiffuse()
@@ -112,7 +154,7 @@ void State::preDiffuse()
     }
     for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
         loc = myHills[a];
-	grid[loc.row][loc.col].guardDif = 20000;
+	grid[loc.row][loc.col].guardDif = 500;
     }
 
     list<Location>::iterator b;
@@ -338,12 +380,13 @@ istream& operator>>(istream &is, State &state)
                 if(player == 0)
                 {
 
-	  	  // One fifth of the newly created ants are guardians
-   		    countMyAnts++;
 
 		    Location loc = Location(row,col);
-		    loc.isGuardian = ( countMyAnts%5 == 0  )?true:false;
+//		    loc.isGuardian = ( (countMyAnts++)%5 == 0  )?true:false;
+//		    loc.isGuardian = true;
                     state.myAnts.push_back(loc);
+//		    if ( loc.isGuardian ) 
+//			    state.makeMove(loc,2);
                 }
                 else
                     state.enemyAnts.push_back(Location(row, col));

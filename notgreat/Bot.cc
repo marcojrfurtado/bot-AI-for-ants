@@ -19,6 +19,7 @@ void Bot::playGame()
     //reads the game parameters and sets up
     cin >> state;
     state.setup();
+    state.defineGuardians();
     #ifdef VIZ
     //cout << "v setFillColor 0 0 0 0.5"<<endl;
     //cout<< "v setLineWidth 5"<<endl;
@@ -31,6 +32,7 @@ void Bot::playGame()
     {
         state.bug << "turn " << turn << ":" << endl;
         state.updateVisionInformation();
+    	state.defineGuardians();
         battleCheck();
         state.bug << "setup: " << state.timer.getTime() << "ms" << endl;
         tactics();
@@ -41,6 +43,7 @@ void Bot::playGame()
         state.diffuse(3);
         makeMoves();
         state.bug << "diffuse: " << state.timer.getTime() << "ms" << endl;
+	state.print_status();
         endTurn();
     }
     //state.bug.close();
@@ -63,6 +66,12 @@ void Bot::battleCheck()
         list<Location>::iterator b;
         for (b = state.myAnts.begin(); b != state.myAnts.end();)
         {
+
+//		if ( b->isGuardian ) {
+//			bug << " battleCheck: Guardian found " << endl;
+//			continue;
+//		}
+
             if(state.distance(*b, antLoc) <= ENG_RAD)
             {
                 checkMyAnts.push(*b); // myAnt is in currentFightGroup
@@ -120,6 +129,10 @@ void Bot::battleCheck()
                 list<Location>::iterator d;
                 for (d = state.myAnts.begin(); d != state.myAnts.end();)
                 {
+//			if ( d->isGuardian ) {
+//				bug << " battleCheck: Guardian found 2" << endl;
+//				continue;
+//			}
                     if(state.distance(*d, antLoc) <= ENG_RAD)
                     {
                         checkMyAnts.push(*d); // myAnt is in currentFightGroup
@@ -145,6 +158,12 @@ void Bot::battleCheck()
             state.bug << "Fight group added to vector: enemyAnts=" << currentFightGroup.enemyAnts.size() << ", myAnts=" << currentFightGroup.myAnts.size() << endl;
         }
     }
+/*    for(int i=0;i<(int)state.fightingGroups.size();i++)
+    {
+        for(int b=0;b<(int)state.fightingGroups[i].myAnts.size();b++){
+            bug<<"v circle "<<state.fightingGroups[i].myAnts[b].isGuardian << endl;
+        }
+    }*/
     #ifdef VIZ
     for(int i=0;i<(int)state.fightingGroups.size();i++)
     {
@@ -269,6 +288,8 @@ Orders Bot::bestof(int i,FightGroup B)
                     state.grid[nloc.row][nloc.col].AntHereCheck=false;
                 }
             }
+//	    if ( loc.isGuardian )
+//		    bug << "Guard to fight group." << endl;
             best.add(loc,bdir);
         }else{
             best.fitness = 9999999;
@@ -300,8 +321,10 @@ void Bot::smallbatt(FightGroup B)
     //state.bug<<"("<<final.ants[0].row<<","<<final.ants[0].col<<")->my:"<<final.md<<" their:"<<final.ed<<" close"<<final.dist<<" tot:"<<final.fitness<<"  "<<state.timer.getTime()<<"ms"<<endl;
     for(int i = 0;i<(int)final.dir.size();i++)
     {
-	   if ( !final.ants[i].isGuardian  )
-        	state.makeMove(final.ants[i],final.dir[i]);
+//	   if ( !final.ants[i].isGuardian  )
+           state.makeMove(final.ants[i],final.dir[i]);
+//	   if ( final.ants[i].isGuardian  )
+  //      	bug << "Guardian small battle" << endl;
     }
 }
 void Bot::largebatt(FightGroup B)
@@ -408,11 +431,13 @@ void Bot::largebatt(FightGroup B)
                 dirMove = orderlist[a].dir;
                 if (dirMove != -1){
                     nloc = state.getLoc(loc, dirMove);
-                    if (state.grid[nloc.row][nloc.col].isOpen() && !loc.isGuardian){
+                    if (state.grid[nloc.row][nloc.col].isOpen() ){
                         state.makeMove(loc,dirMove);
                         orderlist.erase(orderlist.begin()+a);
                         a--;
                     }
+	  // 	    if ( loc.isGuardian  )
+      	//	  	bug << "Guardian large battle" << endl;
                 }
             }
         }
@@ -458,7 +483,7 @@ void Bot::makeMoves()
             	    if(state.grid[nloc.row][nloc.col].isOpen() && state.grid[nloc.row][nloc.col].guardDif >= maxGuardDif) {
 		    
 			    maxGuardDif = state.grid[nloc.row][nloc.col].guardDif;
-			    bestd = 4;
+			    bestd = d;
 		    }
 	    } else {
 
@@ -483,7 +508,8 @@ void Bot::makeMoves()
 	    }
         }
 
-        state.makeMove(loc,bestd);
+//	if ( !loc.isGuardian )
+	state.makeMove(loc,bestd);
         //state.bug<<state.grid[loc.row][loc.col].foodDif<<" ";
     }
 
