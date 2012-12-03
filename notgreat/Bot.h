@@ -12,7 +12,7 @@
 #define MID_RAD 11 //middle radius (atk+1)
 
 
-#define MAX_PLANS 6000000
+#define MAX_PLANS 4500000
 /*
     This struct represents your bot in the game of Ants
 */
