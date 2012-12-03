@@ -1,0 +1,104 @@
+\documentclass{beamer}
+% Class options include: notes, notesonly, handout, trans,
+%                        hidesubsections, shadesubsections,
+%                        inrow, blue, red, grey, brown
+
+% Theme for beamer presentation.
+\usepackage{beamerthemesplit} 
+%\usepackage{amsmath,amssymb}
+\usepackage{url}
+%\usepackage[English]{babel}
+\usepackage[utf8]{inputenc}
+
+
+\title{AI Challenge}    % Enter your title between curly braces
+\author{Antonio Carlos and Luciano Luz}                 % Enter your name between curly braces
+\institute{University of Alberta}      % Enter your institute name between curly braces
+\date{\today}     
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section[Outline]{}
+
+% Creates table of contents slide incorporating
+% all \section and \subsection commands
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}
+ \frametitle{Introduction}
+ \begin{columns}[c]
+    \column{1.5in}
+ 	Two steps
+ 	\begin{itemize}
+		\item Diffusion
+		\item Battle code
+	\end{itemize}
+    \column{1.5in}
+    \begin{figure}
+     \includegraphics[scale=0.5]{pacman.jpg}
+    \end{figure}
+
+ \end{columns}
+\end{frame}
+  
+\section{Battle code}
+
+\begin{frame}
+ \frametitle{Battle code}
+      \begin{itemize}
+ 	\item Small battles
+	\begin{itemize}
+	 \item  Minimax $->$ Alpha Beta
+	\end{itemize}
+	\item Large Battles
+      \end{itemize}
+
+\end{frame}
+
+\section{Defense}
+  \begin{frame}
+    \frametitle{Hill defense}
+    \begin{itemize}
+	\item  Second scent
+	\item  New ant type
+	\begin{itemize}
+	 \item Defined by proximity of the hill
+	\end{itemize}
+
+    \end{itemize}
+      
+  \end{frame}
+  
+  
+\section{Results}
+  \begin{frame}
+    \frametitle{Results}
+    AlphaBeta cut - Considering that small battles have the same size
+    \begin{itemize}
+     \item Before:
+     \begin{itemize}
+      \item Average:71.72ms
+      \item Max:520ms
+     \end{itemize}
+
+     \item After:
+     \begin{itemize}
+      \item Average:17.19ms
+      \item Max:108ms
+     \end{itemize}
+
+     \end{itemize}
+   
+  \end{frame}
+
+
+
+\end{document}

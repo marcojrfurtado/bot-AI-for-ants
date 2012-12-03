@@ -43,7 +43,7 @@ void Bot::playGame()
         state.diffuse(3);
         makeMoves();
         state.bug << "diffuse: " << state.timer.getTime() << "ms" << endl;
-	state.print_status();
+//	state.print_status();
         endTurn();
     }
     //state.bug.close();
@@ -66,11 +66,6 @@ void Bot::battleCheck()
         list<Location>::iterator b;
         for (b = state.myAnts.begin(); b != state.myAnts.end();)
         {
-
-//		if ( b->isGuardian ) {
-//			bug << " battleCheck: Guardian found " << endl;
-//			continue;
-//		}
 
             if(state.distance(*b, antLoc) <= ENG_RAD)
             {
@@ -160,7 +155,7 @@ void Bot::battleCheck()
             bug<<"v circle "<<state.fightingGroups[i].myAnts[b].isGuardian << endl;
         }
     }*/
-    #ifdef VIZ
+    #if VIZ
     for(int i=0;i<(int)state.fightingGroups.size();i++)
     {
         for(int b=0;b<(int)state.fightingGroups[i].myAnts.size();b++){
@@ -254,6 +249,59 @@ Orders Bot::getfit(FightGroup B)
     //state.bug<<"my:"<<mydeath<<" their:"<<theirdeath<<" close"<<beclose<<" tot:"<<theirdeath*10-(mydeath*10.5)+beclose<<endl;
     return Orders(theirdeath*1000-(mydeath*1150)+beclose);
 }
+Orders Bot::kindofbestof(int i,FightGroup B)
+{//i = # of ant in vector currently done
+    Orders best,tmp;
+    Location loc,nloc;
+    if (i == (int)(B.myAnts.size()+B.enemyAnts.size())){
+        //state.bug<<"fitting"<<endl;
+        return getfit(B);
+    } else {
+        //state.bug<<"i:"<<i;
+        if (i < (int)B.myAnts.size())
+        {
+            int bdir=0;
+            loc = B.myAnts[i];
+            for(int d=0; d<5; d++)
+            {
+                nloc = state.getLoc(loc,d);
+                if (state.grid[nloc.row][nloc.col].movable() && state.grid[nloc.row][nloc.col].AntHereCheck==false){
+                    state.grid[nloc.row][nloc.col].AntHereCheck=true;
+                    B.N_my.push_back(nloc);
+                    //state.bug<<" "<<d<<" nloc:"<<nloc.row<<","<<nloc.col<<endl;
+                    tmp = bestof(i+1,B);
+                    if (tmp.fitness > best.fitness)
+                    {
+                        best = tmp;
+                        bdir=d;
+                    }
+                    B.N_my.pop_back();
+                    state.grid[nloc.row][nloc.col].AntHereCheck=false;
+                }
+            }
+            best.add(loc,bdir);
+        }else{
+            best.fitness = 9999999;
+            loc = B.enemyAnts[i-B.myAnts.size()];
+	    nloc = state.getLoc(loc,4); // We consider all enemies won't move onn the next turn.
+	    if (state.grid[nloc.row][nloc.col].movable() && state.grid[nloc.row][nloc.col].AntHereCheck==false){
+	       state.grid[nloc.row][nloc.col].AntHereCheck=true;
+	       B.N_en.push_back(nloc);
+	       //state.bug<<" "<<d<<" n:"<<nloc.row<<","<<nloc.col<<endl;
+	       tmp = bestof(i+1,B);
+	       if (tmp.fitness < best.fitness)
+	       {
+           		best = tmp;
+	       }
+	       B.N_en.pop_back();
+	       state.grid[nloc.row][nloc.col].AntHereCheck=false;
+	    }
+        }
+        //state.bug<<"i"<<i<<":"<<best.fitness<<endl;
+        return best;
+    }
+}
+
 Orders Bot::bestof(int i,FightGroup B)
 {//i = # of ant in vector currently done
     Orders best,tmp;
@@ -284,8 +332,6 @@ Orders Bot::bestof(int i,FightGroup B)
                     state.grid[nloc.row][nloc.col].AntHereCheck=false;
                 }
             }
-//	    if ( loc.isGuardian )
-//		    bug << "Guard to fight group." << endl;
             best.add(loc,bdir);
         }else{
             best.fitness = 9999999;
@@ -311,9 +357,79 @@ Orders Bot::bestof(int i,FightGroup B)
         return best;
     }
 }
+
+Orders Bot::alphabeta(int i,FightGroup B, float alpha = -999999, float beta = 999999)
+{//i = # of ant in vector currently done
+    Orders best,tmp;
+    Location loc,nloc;
+    if (i == (int)(B.myAnts.size()+B.enemyAnts.size())){
+        //state.bug<<"fitting"<<endl;
+        return getfit(B);
+    } else {
+        //state.bug<<"i:"<<i;
+        if (i < (int)B.myAnts.size())
+        {
+            int bdir=0;
+            loc = B.myAnts[i];
+            for(int d=0; d<5; d++)
+            {
+                nloc = state.getLoc(loc,d);
+                if (state.grid[nloc.row][nloc.col].movable() && state.grid[nloc.row][nloc.col].AntHereCheck==false){
+                    state.grid[nloc.row][nloc.col].AntHereCheck=true;
+                    B.N_my.push_back(nloc);
+                    //state.bug<<" "<<d<<" nloc:"<<nloc.row<<","<<nloc.col<<endl;
+                    tmp = alphabeta(i+1,B,alpha,beta);
+                    if (tmp.fitness > best.fitness)
+                    {
+                        best = tmp;
+                        bdir=d;
+                    }
+		    alpha = std::max(tmp.fitness,alpha);
+                    B.N_my.pop_back();
+                    state.grid[nloc.row][nloc.col].AntHereCheck=false;
+
+		    if ( beta <= alpha ) {
+//			    bug << "alpha cut" << endl;
+			    break;
+		    }
+                }
+            }
+            best.add(loc,bdir);
+        }else{
+            best.fitness = 9999999;
+            loc = B.enemyAnts[i-B.myAnts.size()];
+            for(int d=0; d<5; d++)
+            {
+                nloc = state.getLoc(loc,d);
+                if (state.grid[nloc.row][nloc.col].movable() && state.grid[nloc.row][nloc.col].AntHereCheck==false){
+                    state.grid[nloc.row][nloc.col].AntHereCheck=true;
+                    B.N_en.push_back(nloc);
+                    //state.bug<<" "<<d<<" n:"<<nloc.row<<","<<nloc.col<<endl;
+                    tmp = alphabeta(i+1,B,alpha,beta);
+		    beta = std::min(beta,tmp.fitness);
+                    if (tmp.fitness < best.fitness)
+                    {
+                        best = tmp;
+                    }
+                    B.N_en.pop_back();
+                    state.grid[nloc.row][nloc.col].AntHereCheck=false;
+
+		    if ( beta <= alpha ){
+//			    bug << "beta cut" << endl;
+			    break;
+		    }
+                }
+            }
+        }
+        //state.bug<<"i"<<i<<":"<<best.fitness<<endl;
+        return best;
+    }
+}
+
 void Bot::smallbatt(FightGroup B)
 {
-    Orders final = bestof(0,B);
+//    Orders final = bestof(0,B);
+    Orders final = alphabeta(0,B);
     //state.bug<<"("<<final.ants[0].row<<","<<final.ants[0].col<<")->my:"<<final.md<<" their:"<<final.ed<<" close"<<final.dist<<" tot:"<<final.fitness<<"  "<<state.timer.getTime()<<"ms"<<endl;
     for(int i = 0;i<(int)final.dir.size();i++)
     {
@@ -323,6 +439,19 @@ void Bot::smallbatt(FightGroup B)
   //      	bug << "Guardian small battle" << endl;
     }
 }
+
+void Bot::mediumbatt(FightGroup B) {
+
+    Orders final = kindofbestof(0,B);
+    
+    for(int i = 0;i<(int)final.dir.size();i++)
+    {
+           state.makeMove(final.ants[i],final.dir[i]);
+    }
+
+
+}
+
 void Bot::largebatt(FightGroup B)
 {
     Location closest,loc;
@@ -432,8 +561,6 @@ void Bot::largebatt(FightGroup B)
                         orderlist.erase(orderlist.begin()+a);
                         a--;
                     }
-	  // 	    if ( loc.isGuardian  )
-      	//	  	bug << "Guardian large battle" << endl;
                 }
             }
         }
@@ -441,10 +568,23 @@ void Bot::largebatt(FightGroup B)
 }
 void Bot::tactics()
 {//splits battles into small and big to be called seprately
-    for(int i=0;i<(int)state.fightingGroups.size();i++)
+/*    for(int i=0;i<(int)state.fightingGroups.size();i++)
     {
         int fighters = state.fightingGroups[i].myAnts.size()+state.fightingGroups[i].enemyAnts.size();
-        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 7)
+        if ((state.timer.getTime()>(state.turntime-150) && fighters>6) || fighters > 8)
+            largebatt(state.fightingGroups[i]);
+	else if ( ((state.timer.getTime()>(state.turntime-200)) && fighters>5) || fighters >7  ) {
+	    mediumbatt(state.fightingGroups[i]);
+	    bug << "Entered medium battle." << endl;
+	}
+        else
+            smallbatt(state.fightingGroups[i]);
+    }*/
+    
+     for(int i=0;i<(int)state.fightingGroups.size();i++)
+     {
+        int fighters = state.fightingGroups[i].myAnts.size()+state.fightingGroups[i].enemyAnts.size();
+        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 8)
             largebatt(state.fightingGroups[i]);
         else
             smallbatt(state.fightingGroups[i]);
@@ -510,7 +650,7 @@ void Bot::makeMoves()
 
 		    if (state.grid[nloc.row][nloc.col].isFood)
 		    {//if there's food next to us, collect it now
-			bestd = d;
+			bestd = 4;
 			state.grid[nloc.row][nloc.col].foodDif=0;//and then run away from it, since we don't need its scent anymore
 			break;
 		    }

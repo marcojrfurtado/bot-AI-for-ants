@@ -1,0 +1,26 @@
+
+Introduction 
+	Two steps
+		Diffusion
+		Battle code
+
+Battle code
+	Small battles
+		Minimax -> Alpha Beta
+	Large Battles
+
+Defense
+	Hill defense
+		Second scent
+		New ant type
+			Defined by proximity of the hill
+
+Results
+	AlphaBeta cut - Considering that small battles have the same size
+		Before:
+			Average:71.72ms
+			Max:520ms
+		After
+			Average:17.19ms
+			Max:108ms
+

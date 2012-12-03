@@ -28,7 +28,10 @@ struct Bot
     void tactics();    //run tactical AI
     void endTurn();     //indicates to the engine that it has made its moves
     Orders bestof(int i,FightGroup B);
+    Orders alphabeta(int i,FightGroup B,float alpha, float beta);
+    Orders kindofbestof(int i,FightGroup B);
     void smallbatt(FightGroup B);
+    void mediumbatt(FightGroup B);
     void largebatt(FightGroup B);
     Orders getfit(FightGroup B);
     Bug bug;

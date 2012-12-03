@@ -34,7 +34,7 @@ void State::defineGuardians() {
 	std::list<Location>::iterator it;
 	std::vector<Location>::iterator itH;
 	for(itH = myHills.begin(); itH != myHills.end(); itH++ ) {
-		int numGuardiansLeft= (myAnts.size()/10)/ myHills.size();
+		int numGuardiansLeft= (myAnts.size()/7)/ myHills.size();
 		for( it = myAnts.begin() ; it != myAnts.end(); it++ ) {
 			
 			// If we reached the desired number of guardians for this hill, leave
@@ -87,9 +87,6 @@ void State::reset()
 //outputs move information to the engine
 void State::makeMove(const Location &loc, int direction)
 {
-   if ( loc.isGuardian )
-	   bug << "Guard moving" << endl;
-
     if (direction < 4 && direction > -1)
     {
         cout << "o " << loc.row << " " << loc.col << " " << CDIRECTIONS[direction] << endl;
@@ -154,7 +151,7 @@ void State::preDiffuse()
     }
     for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
         loc = myHills[a];
-	grid[loc.row][loc.col].guardDif = 200;
+	grid[loc.row][loc.col].guardDif = 300;
     }
 
     list<Location>::iterator b;

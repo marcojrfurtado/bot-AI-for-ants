@@ -79,7 +79,8 @@ BattleResolver::BattleResolver(State& s, vector<AntInfo*>& my_ants, vector<AntIn
 
 // Resolve a battle by choosing the "best" strategy
 void BattleResolver::ResolveBattle() {
-	if (num_my_ants > 8 || num_enemy_ants > 8) {
+	i 
+		(num_my_ants > 8 || num_enemy_ants > 8) {
 		state.bug << "Too many ants in battle. Using many-to-many battle strategy." << endl;
 		ChooseManyToManyStrategy();
 		return;
