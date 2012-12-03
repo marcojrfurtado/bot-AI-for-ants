@@ -10,9 +10,14 @@
 #define ENG_RAD 18 //engagement radius (atk+2)
 #define ATK_RAD 5 //attack radius
 #define MID_RAD 11 //middle radius (atk+1)
+
+
+#define MAX_PLANS 7000000
 /*
     This struct represents your bot in the game of Ants
 */
+extern int turn;
+
 struct Bot
 {
     State state;
@@ -34,6 +39,7 @@ struct Bot
     void mediumbatt(FightGroup B);
     void largebatt(FightGroup B);
     Orders getfit(FightGroup B);
+    long long int get_move_plans(FightGroup f);
     Bug bug;
 
 };

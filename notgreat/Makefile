@@ -1,2 +1,2 @@
 all:
-	g++ -o NotGreat *.cc
+	g++ -O3 -o NotGreat *.cc

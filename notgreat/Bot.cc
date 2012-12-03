@@ -566,6 +566,40 @@ void Bot::largebatt(FightGroup B)
         }
     }
 }
+
+long long int Bot::get_move_plans(FightGroup B) {
+
+
+	long long int ret =1;
+	
+	
+	for(int i = 0; i < B.myAnts.size(); i++ ) {
+        	Location loc = B.myAnts[i];
+		int count = 0;
+		for( int d = 0 ; d < 5; d++ ) {
+			Location nloc = state.getLoc(loc,d);
+			if ( state.grid[nloc.row][nloc.col].movable()   )
+				count++;
+		}
+		ret*=count;
+    	}
+	for(int i = 0; i < B.enemyAnts.size(); i++ ) {
+        	Location loc = B.enemyAnts[i];
+		int count = 0;
+		for( int d = 0 ; d < 5; d++ ) {
+			Location nloc = state.getLoc(loc,d);
+			if ( state.grid[nloc.row][nloc.col].movable()   )
+				count++;
+		}
+		ret*=count;
+	}
+
+	return ret;
+
+}
+
+
+
 void Bot::tactics()
 {//splits battles into small and big to be called seprately
 /*    for(int i=0;i<(int)state.fightingGroups.size();i++)
@@ -580,14 +614,25 @@ void Bot::tactics()
         else
             smallbatt(state.fightingGroups[i]);
     }*/
-    
+   
+
      for(int i=0;i<(int)state.fightingGroups.size();i++)
      {
         int fighters = state.fightingGroups[i].myAnts.size()+state.fightingGroups[i].enemyAnts.size();
-        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 8)
-            largebatt(state.fightingGroups[i]);
-        else
+	long long int num_plans = get_move_plans(state.fightingGroups[i]);
+        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 9) {
+
+	    bug << "Turn:" << turn << endl;
+	    bug << "Estimated number of plans: " << num_plans << " for " << fighters << endl;
+	    if ( num_plans < MAX_PLANS ) 
+            	smallbatt(state.fightingGroups[i]);
+	    else
+		largebatt(state.fightingGroups[i]);
+	} else {
+	    bug << "Turn:" << turn << endl;
+	    bug << "Estimative SMALL BATTLE: " << num_plans  << " for " << fighters << endl;
             smallbatt(state.fightingGroups[i]);
+	}
     }
 }
 void Bot::makeMoves()
