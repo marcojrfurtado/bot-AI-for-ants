@@ -620,7 +620,7 @@ void Bot::tactics()
      {
         int fighters = state.fightingGroups[i].myAnts.size()+state.fightingGroups[i].enemyAnts.size();
 	long long int num_plans = get_move_plans(state.fightingGroups[i]);
-        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 9) {
+        if ((state.timer.getTime()>(state.turntime-150) && fighters>5) || fighters > 8) {
 
 	    bug << "Turn:" << turn << endl;
 	    bug << "Estimated number of plans: " << num_plans << " for " << fighters << endl;
