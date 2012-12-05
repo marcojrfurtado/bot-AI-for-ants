@@ -30,11 +30,13 @@ void State::setup()
 
 void State::defineGuardians() {
 
+	if (  turn	< DEFINE_GUARDIANS  )
+		return;
 
 	std::list<Location>::iterator it;
 	std::vector<Location>::iterator itH;
 	for(itH = myHills.begin(); itH != myHills.end(); itH++ ) {
-		int numGuardiansLeft= (myAnts.size()/7)/ myHills.size();
+		int numGuardiansLeft= ceil( ( (double)  myAnts.size() / GUARD_RATIO) /  myHills.size());
 		for( it = myAnts.begin() ; it != myAnts.end(); it++ ) {
 			
 			// If we reached the desired number of guardians for this hill, leave
@@ -149,9 +151,18 @@ void State::preDiffuse()
             }
         }
     }
-    for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
+    
+    /*for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
         loc = myHills[a];
 	grid[loc.row][loc.col].guardDif = 300;
+    }*/
+    
+    for(int a=0; a<(int) myHills.size(); a++){//run away from ant hills early on, stay near them later
+        loc = myHills[a];
+	for(int i = -5 ; i < 5 ; i++ ) 
+		for( int j = -5 ; j < 5; j++ )
+			if (  grid[xw(loc.row+i)][yw(loc.col+j)].isOpen() )
+				grid[xw(loc.row+i)][yw(loc.col+j)].guardDif+=300;
     }
 
     list<Location>::iterator b;

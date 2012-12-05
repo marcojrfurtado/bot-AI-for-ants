@@ -66,8 +66,9 @@ void Bot::battleCheck()
         list<Location>::iterator b;
         for (b = state.myAnts.begin(); b != state.myAnts.end();)
         {
+  	    int actual_rad = ( b->isGuardian )?ENG_GUARD_RAD:ENG_RAD;
 
-            if(state.distance(*b, antLoc) <= ENG_RAD)
+            if( state.distance(*b, antLoc) <= actual_rad )
             {
                 checkMyAnts.push(*b); // myAnt is in currentFightGroup
                 currentFightGroup.myAnts.push_back(*b);
@@ -362,7 +363,9 @@ Orders Bot::alphabeta(int i,FightGroup B, float alpha = -999999, float beta = 99
 {//i = # of ant in vector currently done
     Orders best,tmp;
     Location loc,nloc;
-    if (i == (int)(B.myAnts.size()+B.enemyAnts.size())){
+
+    const int totalAnts = B.myAnts.size()+B.enemyAnts.size();
+    if (i == (int)(totalAnts)){
         //state.bug<<"fitting"<<endl;
         return getfit(B);
     } else {
@@ -378,7 +381,8 @@ Orders Bot::alphabeta(int i,FightGroup B, float alpha = -999999, float beta = 99
                     state.grid[nloc.row][nloc.col].AntHereCheck=true;
                     B.N_my.push_back(nloc);
                     //state.bug<<" "<<d<<" nloc:"<<nloc.row<<","<<nloc.col<<endl;
-                    tmp = alphabeta(i+1,B,alpha,beta);
+                    tmp = alphabeta(i+ 1 ,B,alpha,beta);
+//                    tmp = alphabeta(i+ B.myAnts.size() ,B,alpha,beta);
                     if (tmp.fitness > best.fitness)
                     {
                         best = tmp;
@@ -406,6 +410,7 @@ Orders Bot::alphabeta(int i,FightGroup B, float alpha = -999999, float beta = 99
                     B.N_en.push_back(nloc);
                     //state.bug<<" "<<d<<" n:"<<nloc.row<<","<<nloc.col<<endl;
                     tmp = alphabeta(i+1,B,alpha,beta);
+//                    tmp = alphabeta((i+B.enemyAnts.size()+1)%totalAnts,B,alpha,beta);
 		    beta = std::min(beta,tmp.fitness);
                     if (tmp.fitness < best.fitness)
                     {

@@ -84,7 +84,7 @@ Regarding the alpha-beta implementation, our biggest challenge was to determine 
  \end{itemize}
 \end{itemize}
 
-Even though we achieved better results, the main problem for the AI challenge is not the average time you can run the battle code. If you cannot accomplish the minimum acceptable time every turn, then your bot is removed from the game, and you are going to lose eventually. We had many problems with timeouts, when uploading our code to the server provided to us in the course. We adjusted some parameters and it seems that the problem is solved.
+Even though we achieved better results, the main problem for the AI challenge is not the average time you can run the battle code. If you cannot accomplish the minimum acceptable time every turn, then your bot is removed from the game, and you are going to lose eventually.
 
 
 

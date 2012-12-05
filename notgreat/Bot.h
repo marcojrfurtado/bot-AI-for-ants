@@ -8,6 +8,7 @@
 
 
 #define ENG_RAD 18 //engagement radius (atk+2)
+#define ENG_GUARD_RAD 7 //engagement radius (atk+2)
 #define ATK_RAD 5 //attack radius
 #define MID_RAD 11 //middle radius (atk+1)
 

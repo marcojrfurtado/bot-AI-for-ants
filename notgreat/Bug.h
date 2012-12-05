@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string.h>
 
-//#define DEBUG
+#define DEBUG
 //#define VIZ
 using namespace std;
 /*

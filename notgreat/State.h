@@ -27,7 +27,12 @@ const int DIRECTIONS[5][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0,0} };      /
 #define rowRep for(int row=0; row<rows; row++)
 #define colRep for(int col=0; col<cols; col++)
 
-#define GRD_RAD 6
+#define GRD_RAD 8
+
+// 1/(x)
+#define GUARD_RATIO 7
+
+#define DEFINE_GUARDIANS 30
 
 extern int rows,cols,turn;//these are global variables
 /*
